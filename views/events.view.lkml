@@ -404,6 +404,7 @@ view: events {
 
 ######### Retention Analysis##########
 
+#######First visit on the app##########
   dimension_group: user_first_touch {
     description: "The time at which the user first opened the app."
     timeframes: [raw,time,hour,minute,date, week, day_of_week, month, year]
@@ -411,6 +412,7 @@ view: events {
     sql: TIMESTAMP_MICROS(${TABLE}.user_first_touch_timestamp) ;;
   }
 
+######### Calculating the time intervals between events############
   dimension_group: since_first_touch {
     type: duration
     intervals: [day, week]
@@ -418,17 +420,20 @@ view: events {
     sql_end: ${_event_raw} ;;
   }
 
+########## Creating firebase_user_id to get count_distinct of users ##########
   dimension: firebase_user_id {
     description: "either user_id or user_pseudo_id"
     sql: COALESCE(${user_id},${user_pseudo_id}) ;;
   }
 
+########## creating nnumber of users needed for retention ##############
   measure: number_of_users {
     type: count_distinct
     sql: ${firebase_user_id} ;;
   }
 
   ####### Used to calculate Installs ###########
+
 
   dimension: retention_day {
     group_label: "Retention"
