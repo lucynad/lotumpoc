@@ -4,9 +4,9 @@ include: "/views/*.view.lkml"                # include all views in the views/ f
 
 explore: events {
 
-# Will apply filter automatically for created Explore, will pull data for one completed day
+#Will apply filter automatically for created Explore, will pull data for one completed day
   always_filter: {
-    filters: [events.event_date: "1 days ago for 1 day"]
+    filters: [events.event_date: "2 days ago for 2 day"]
   }
 
   join: events__items {
