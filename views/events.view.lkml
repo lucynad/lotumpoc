@@ -402,6 +402,8 @@ view: events {
     group_item_label: "Source"
   }
 
+######### Retention Analysis##########
+
   dimension_group: user_first_touch {
     description: "The time at which the user first opened the app."
     timeframes: [raw,time,hour,minute,date, week, day_of_week, month, year]
@@ -414,6 +416,35 @@ view: events {
     intervals: [day, week]
     sql_start: ${user_first_touch_raw} ;;
     sql_end: ${_event_raw} ;;
+  }
+
+  dimension: firebase_user_id {
+    description: "either user_id or user_pseudo_id"
+    sql: COALESCE(${user_id},${user_pseudo_id}) ;;
+  }
+
+  measure: number_of_users {
+    type: count_distinct
+    sql: ${firebase_user_id} ;;
+  }
+
+  ####### Used to calculate Installs ###########
+
+  dimension: retention_day {
+    group_label: "Retention"
+    description: "Days since first seen (from event date)"
+    type:  number
+    sql:  DATE_DIFF(${event_date}, ${user_first_touch_date}, DAY);;
+  }
+
+
+  measure: number_of_new_users {
+    description: "Start date = Play Date"
+    type: count_distinct
+    sql: ${user_id};;
+    filters: [retention_day: "0"]
+    value_format_name: large_number
+    drill_fields: [detail*]
   }
 
   dimension: user_id {
@@ -445,15 +476,7 @@ view: events {
     sql: ${TABLE}.user_pseudo_id ;;
   }
 
-  dimension: firebase_user_id {
-    description: "either user_id or user_pseudo_id"
-    sql: COALESCE(${user_id},${user_pseudo_id}) ;;
-  }
 
-  measure: number_of_users {
-    type: count_distinct
-    sql: ${firebase_user_id} ;;
-  }
 
   measure: count {
     type: count

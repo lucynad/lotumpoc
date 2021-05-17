@@ -1,6 +1,10 @@
 connection: "bigquery_wordblitz"
 
-include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
+include: "/views/*.view.lkml"      # include all views in the views/ folder in this project
+
+
+named_value_format: large_eur { value_format: "[>=1000000]\"€\"0.00,,\"M\";[>=1000]\"€\"0.00,\"K\";\"€\"0.00" }
+named_value_format: large_number { value_format: "[>=1000000]0.00,,\"M\";[>=1000]0.00,\"K\";0" }
 
 explore: events {
 
