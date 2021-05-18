@@ -32,7 +32,7 @@ view: events {
 
 
 
-  ########Super Fun Metric serving as an input into DT#############
+  ########Super Fun Metric serving as an input into DT Fan_Facts#############
 
 
 dimension: is_in_last_7_days {
@@ -41,7 +41,7 @@ dimension: is_in_last_7_days {
   sql: ${event_date}>=DATE_SUB(current_date(), INTERVAL 7 DAY) ;;
 }
 
-###### counting days that have events in last 5 days
+###### counting days that have events in last 5 days out of 7
 measure: active_days_last_7_days {
   type: count_distinct
   sql: ${event_date} ;;
@@ -452,7 +452,7 @@ measure: active_days_last_7_days {
     sql: ${firebase_user_id} ;;
   }
 
-  ####### Used to calculate Installs ###########
+  ####### Used to calculate Installs & Retention as per eligable users###########
 
 
   dimension: retention_day {
@@ -461,6 +461,158 @@ measure: active_days_last_7_days {
     type:  number
     sql:  DATE_DIFF(${event_date}, ${user_first_touch_date}, DAY);;
   }
+
+  dimension_group: current {
+    description: "the time right now"
+    type: time
+    sql: CURRENT_TIMESTAMP() ;;
+  }
+
+  dimension: days_since_user_signup {
+    type: number
+    description: "Days since first seen (from today)"
+    sql:  DATE_DIFF(${current_date}, ${user_first_touch_date}, DAY);;
+  }
+
+# D1
+
+  measure: d1_retained_users {
+    group_label: "Retention"
+    description: "Number of players that came back to play on day 1"
+    type: count_distinct sql: ${firebase_user_id} ;;
+    filters: {
+      field: retention_day
+      value: "1"
+    }
+    drill_fields: [geo__country,d1_retained_users]
+  }
+
+  measure: d1_eligible_users {
+    hidden: yes
+    group_label: "Retention"
+    description: "Number of players older than 0 days"
+    type: count_distinct
+    sql: ${firebase_user_id} ;;
+    filters: {
+      field: days_since_user_signup
+      value: ">0"
+    }
+  }
+
+  measure: d1_retention_rate {
+    group_label: "Retention"
+    description: "% of players (that are older than 0 days) that came back to play on day 1"
+    value_format_name: percent_2
+    type: number
+    sql: 1.0 * ${d1_retained_users}/ NULLIF(${d1_eligible_users},0);;
+    drill_fields: [geo__country,d1_retention_rate]
+  }
+
+  # D7
+
+  measure: d7_retained_users {
+    group_label: "Retention"
+    description: "Number of players that came back to play on day 7"
+    type: count_distinct sql: ${firebase_user_id} ;;
+    filters: {
+      field: retention_day
+      value: "7"
+    }
+    drill_fields: [geo__country,d7_retained_users]
+  }
+
+  measure: d7_eligible_users {
+    hidden: yes
+    group_label: "Retention"
+    description: "Number of players older than 7 days"
+    type: count_distinct
+    sql: ${firebase_user_id} ;;
+    filters: {
+      field: days_since_user_signup
+      value: ">7"
+    }
+    drill_fields: [geo__country,d7_eligible_users]
+  }
+
+  measure: d7_retention_rate {
+    group_label: "Retention"
+    description: "% of players (that are older than 7 days) that came back to play on day 7"
+    value_format_name: percent_2
+    type: number
+    sql: 1.0 * ${d7_retained_users}/ NULLIF(${d7_eligible_users},0);;
+    drill_fields: [geo__country,d7_retention_rate]
+  }
+
+  # D14
+
+  measure: d14_retained_users {
+    group_label: "Retention"
+    description: "Number of players that came back to play on day 14"
+    type: count_distinct sql: ${firebase_user_id} ;;
+    filters: {
+      field: retention_day
+      value: "14"
+    }
+    drill_fields: [geo__country,d14_retained_users]
+  }
+
+  measure: d14_eligible_users {
+    hidden: yes
+    group_label: "Retention"
+    description: "Number of players older than 14 days"
+    type: count_distinct
+    sql: ${firebase_user_id} ;;
+    filters: {
+      field: days_since_user_signup
+      value: ">14"
+    }
+    drill_fields: [geo__country,d14_eligible_users]
+  }
+
+  measure: d14_retention_rate {
+    group_label: "Retention"
+    description: "% of players (that are older than 14 days) that came back to play on day 14"
+    value_format_name: percent_2
+    type: number
+    sql: 1.0 * ${d14_retained_users}/ NULLIF(${d14_eligible_users},0);;
+    drill_fields: [geo__country,d14_retention_rate]
+  }
+
+  # D30
+
+  measure: d30_retained_users {
+    group_label: "Retention"
+    description: "Number of players that came back to play on day 30"
+    type: count_distinct sql: ${firebase_user_id} ;;
+    filters: {
+      field: retention_day
+      value: "30"
+    }
+    drill_fields: [geo__country,d30_retained_users]
+  }
+
+  measure: d30_eligible_users {
+    hidden: yes
+    group_label: "Retention"
+    description: "Number of players older than 30 days"
+    type: count_distinct
+    sql: ${firebase_user_id} ;;
+    filters: {
+      field: days_since_user_signup
+      value: ">30"
+    }
+    drill_fields: [geo__country,d30_eligible_users]
+  }
+
+  measure: d30_retention_rate {
+    group_label: "Retention"
+    description: "% of players (that are older than 30 days) that came back to play on day 30"
+    value_format_name: percent_2
+    type: number
+    sql: 1.0 * ${d30_retained_users}/ NULLIF(${d30_eligible_users},0);;
+    drill_fields: [geo__country,d30_retention_rate]
+  }
+
 
 
   measure: number_of_new_users {
