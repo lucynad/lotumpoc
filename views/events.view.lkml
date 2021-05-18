@@ -29,6 +29,26 @@ view: events {
        END ;;
   }
 
+
+
+
+  ########Super Fun Metric serving as an input into DT#############
+
+
+dimension: is_in_last_7_days {
+  hidden: yes
+  type: yesno
+  sql: ${event_date}>=DATE_SUB(current_date(), INTERVAL 7 DAY) ;;
+}
+
+###### counting days that have events in last 5 days
+measure: active_days_last_7_days {
+  type: count_distinct
+  sql: ${event_date} ;;
+  filters: [is_in_last_7_days: "yes"]
+}
+ #################################################################
+
   dimension: app_info__firebase_app_id {
     type: string
     sql: ${TABLE}.app_info.firebase_app_id ;;

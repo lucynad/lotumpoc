@@ -18,4 +18,10 @@ label: "wordblitz"
     sql: LEFT JOIN UNNEST(${events.items}) as events__items ;;
     relationship: one_to_many
   }
+    join: fan_facts {
+      view_label: "Events"
+    relationship: many_to_one
+    sql_on: ${fan_facts.user_id}=${events.user_id} ;;
+}
+
 }
