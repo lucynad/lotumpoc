@@ -32,6 +32,24 @@ view: events_4pics {
        END ;;
   }
 
+#########Monetization########################
+
+  dimension: is_iap_purchase {
+    type: yesno
+    hidden: yes
+    sql: ${event_name} = 'in_app_purchase' ;;
+  }
+
+measure: iap_revenue {
+  label: "Total IAP Revenue"
+  group_label: "Monetization"
+  description: "Total Revenue from In-App Purchases"
+  type: sum
+  sql: ${user_ltv__revenue} ;;
+  filters: [is_iap_purchase: "yes"]
+  value_format_name: eur
+}
+
 
 
 ######### Retention Analysis##########
