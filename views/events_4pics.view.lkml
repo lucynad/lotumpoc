@@ -47,7 +47,7 @@ measure: iap_revenue {
   type: sum
   sql: ${user_ltv__revenue} ;;
   filters: [is_iap_purchase: "yes"]
-  value_format_name: eur
+  value_format_name: large_usd
 }
               #ads revenue
 
@@ -63,15 +63,55 @@ measure: iap_revenue {
     type: sum
     sql: ${user_ltv__revenue} ;;
     filters: [is_ad_paid_event: "yes"]
-    value_format_name: eur
+    value_format_name: large_usd
   }
+
+################ IAP Revenue per user #########################
+  measure: average_iap_revenue_per_user {
+    group_label: "Monetization"
+    label: "ARPU - IAP"
+    description: "(Average revenue per user) = Total IAP Revenue / Total Number of Users"
+    type: number
+    sql: 1.0 * ${iap_revenue} / NULLIF(${number_of_users},0) ;;
+    value_format_name: large_usd
+    drill_fields: [drill_field,average_iap_revenue_per_user]
+  }
+
+  ############## Average Ad Revenue per user ###################
+  measure: average_ad_revenue_per_user {
+    group_label: "Monetization"
+    label: "ARPU - Ads"
+    description: "(Average revenue per user) = Ad Revenue / Total Number of Users"
+    type: number
+    sql: 1.0 * ${ad_revenue} / NULLIF(${number_of_users},0) ;;
+    value_format_name: large_usd
+    drill_fields: [drill_field,average_ad_revenue_per_user]
+  }
+
+
+  ############## Calculating combined IAP + AD Revenue###############
+
+  measure: combined_revenue {
+    type: number
+    sql: IFNULL(${iap_revenue},0) + IFNULL(${ad_revenue},0) ;;
+    value_format_name: large_usd
+  }
+
+  measure: total_revenue {
+    group_label: "Monetization"
+    description: "IAP + Ad Revenue"
+    type: sum
+    sql: ${combined_revenue} ;;
+    value_format_name: large_usd
+    drill_fields: [drill_field,total_revenue]
+  }
+
 
 
 
 
 ######### Retention Analysis##########
 
-#######First visit on the app##########
   dimension_group: user_first_touch {
     description: "The time at which the user first opened the app."
     timeframes: [raw,time,hour,minute,date, week, day_of_week, month, year]
@@ -86,6 +126,11 @@ measure: iap_revenue {
     sql_start: ${user_first_touch_raw} ;;
     sql_end: ${_event_raw} ;;
   }
+
+######First visit on the app##########
+
+
+
 
 ########## Creating firebase_user_id to get count_distinct of users ##########
   dimension: firebase_user_id {
@@ -542,6 +587,35 @@ measure: iap_revenue {
       device__mobile_marketing_name
     ]
   }
+
+  ###Drill Selector####
+  parameter: drill_by {
+    type: string
+    default_value: "device_platform"
+    allowed_value: { label: "Country" value: "geo__country" }
+    allowed_value: { label: "Platform" value: "platform" }
+    allowed_value: { label: "App Version" value: "app_info__version" }
+    allowed_value: { label: "Traffic Source" value: "traffic_source__name" }
+  }
+
+  dimension: drill_field {
+    hidden: yes
+    type: string
+    label_from_parameter: drill_by
+    sql:
+      {% case  drill_by._parameter_value %}
+        {% when "'country'" %}
+          ${TABLE}.geo.country
+        {% when "'platform'" %}
+          ${TABLE}.platform
+        {% when "'app_info_version'" %}
+          ${TABLE}.app_info.version
+        {% when "'install_source'" %}
+          ${TABLE}.traffic_source.source
+        {% else %}
+         null
+      {% endcase %} ;;
+  }
 }
 
 view: events_4pics__items {
@@ -674,4 +748,6 @@ view: events_4pics__items {
     type: number
     sql: ${TABLE}.quantity ;;
   }
+
+
 }
