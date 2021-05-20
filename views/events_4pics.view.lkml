@@ -49,6 +49,23 @@ measure: iap_revenue {
   filters: [is_iap_purchase: "yes"]
   value_format_name: eur
 }
+              #ads revenue
+
+  dimension: is_ad_paid_event {
+    type: yesno
+    hidden: yes
+    sql: ${event_name} = 'ad_paid_event' ;;
+  }
+  measure: ad_revenue {
+    label: "Total Ad Revenue"
+    group_label: "Monetization"
+    description: "Total Revenue from Adds"
+    type: sum
+    sql: ${user_ltv__revenue} ;;
+    filters: [is_ad_paid_event: "yes"]
+    value_format_name: eur
+  }
+
 
 
 
